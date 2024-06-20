@@ -1,4 +1,5 @@
 const { EmbedBuilder, SlashCommandBuilder } = require('discord.js');
+const config = require('../../../config.json')
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -9,8 +10,8 @@ module.exports = {
     await interaction.deferReply();
     const getStatus = async () => {
       try {
-        const getMinecraftBedrockData = await fetch(`https://api.mcstatus.io/v2/status/bedrock/${process.env.minecraft_bedrock_server}:${process.env.minecraft_bedrock_server}`)
-        const getMinecraftJavaData = await fetch(`https://api.mcstatus.io/v2/status/java/${process.env.minecraft_java_server}`)
+        const getMinecraftBedrockData = await fetch(`https://api.mcstatus.io/v2/status/bedrock/${config.bedrock_ip}:${config.bedrock_port}`)
+        const getMinecraftJavaData = await fetch(`https://api.mcstatus.io/v2/status/java/${config.java_ip}`)
 
         const javaStatus = await getMinecraftJavaData.json()
         const bedrockStatus = await getMinecraftBedrockData.json()
@@ -33,12 +34,11 @@ module.exports = {
       return '#00FF00';
     };
 
-    console.log(miencraftStatus)
 
     const embed = new EmbedBuilder()
       .setColor(statusColor(miencraftStatus?.javaStatus?.online, miencraftStatus?.bedrockStatus?.online))
       .setTitle('Minecraft Server Status')
-      .setDescription(`Minecraft main IP: ${miencraftStatus.javaStatus.host}`)
+      .setDescription(`Minecraft main IP: ${miencraftStatus?.javaStatus?.host || "server not active"}`)
       .addFields(
         { name: "Online Players", value: `${!miencraftStatus?.javaStatus?.players?.online ? "0" : miencraftStatus?.javaStatus?.players?.online}/${!miencraftStatus?.javaStatus?.players?.max ? "0" : miencraftStatus?.javaStatus?.players?.max}` },
         { name: "Server Version", value: miencraftStatus?.javaStatus?.version?.name_clean || "unknown" },
@@ -47,7 +47,7 @@ module.exports = {
         { name: "Bedrock status", value: `${miencraftStatus?.bedrockStatus?.online ? "online" : "offline"}` },
       )
       .setThumbnail('https://i.ytimg.com/vi/0sSyz2KZEkE/oar2.jpg?sqp=-oaymwEiCMAEENAFSFqQAgHyq4qpAxEIARUAAAAAJQAAyEI9AICiQw==&rs=AOn4CLBLPtaR7nmIQJRDEni8_TgS-R-bzg')
-      .setFooter({ text: process.env.minecraft_java_server, iconURL: 'https://static-00.iconduck.com/assets.00/minecraft-icon-2048x2048-3ifq7gy7.png' })
+      .setFooter({ text: `${process.env.minecraft_java_server}`, iconURL: 'https://static-00.iconduck.com/assets.00/minecraft-icon-2048x2048-3ifq7gy7.png' })
       .setTimestamp();
     await interaction.editReply({ embeds: [embed] });
   },
