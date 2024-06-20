@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('minecraft-ping')
-		.setDescription('Send ping to minecrft server'),
+		.setDescription('/minecraft-ping. check ping to minecrft server'),
 	async execute(interaction) {
 		console.log(interaction);
 		const sent = await interaction.reply({ content: 'Pinging...', fetchReply: true, ephemeral: true });

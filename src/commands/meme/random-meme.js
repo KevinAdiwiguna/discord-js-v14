@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('random-meme')
-    .setDescription('Show random meme'),
+    .setDescription('/random-meme. Show random meme'),
   async execute(interaction) {
 
     async function getMeme() {

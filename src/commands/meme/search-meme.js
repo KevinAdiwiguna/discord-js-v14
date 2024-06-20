@@ -3,7 +3,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('search-meme')
-    .setDescription('Search for a meme')
+    .setDescription('/search-meme. Search for a meme')
     .addStringOption(option =>
       option.setName('query')
         .setDescription('The search query')

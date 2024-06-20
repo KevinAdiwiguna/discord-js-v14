@@ -4,7 +4,7 @@ const config = require('../../../config.json')
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('minecraft-information')
-    .setDescription('Show Minecraft server status'),
+    .setDescription('/minecraft-information. Show Minecraft server status'),
 
   async execute(interaction) {
     await interaction.deferReply();
