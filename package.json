@@ -5,6 +5,7 @@
   "main": "./src/index.js",
   "scripts": {
     "dev": "node --watch ./src/index.js",
+    "slash": "node ./src/deploy-commands.js",
     "prod": "node ./src/index.js"
   },
   "keywords": [],
