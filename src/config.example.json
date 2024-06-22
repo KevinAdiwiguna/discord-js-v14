@@ -1,0 +1,10 @@
+{
+  "welcome_channel": "welcome channel name (NOT ID)",
+  "rules_channel": "<#channel id here>",
+  "self_role_channel": "<#channel id here>",
+  "server_name": "your discord server name",
+  "thumbnail_url": "",
+  "minecraft_img_url": "",
+  "developer": "kepin",
+  "github": "github.com/KevinAdiwiguna"
+}
