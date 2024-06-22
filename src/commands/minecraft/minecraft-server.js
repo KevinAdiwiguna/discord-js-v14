@@ -1,27 +1,28 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const config = require('../../../config.json')
-module.exports = {
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import config from '../../config.json' with { type: "json" };
+
+export default {
 	data: new SlashCommandBuilder()
 		.setName('minecraft-server')
-		.setDescription('/minecraft-server. Show Minecraft server domain'),
+		.setDescription('Show Minecraft server details'),
 
 	async execute(interaction) {
 		await interaction.deferReply();
+
 		const embed = new EmbedBuilder()
 			.setColor(0x00FF00)
 			.setTitle('Minecraft Server List')
 			.setDescription('List of Minecraft servers')
 			.addFields(
-				{ name: "Java IP", value: config.java_ip },
-				{ name: "Bedrock IP", value: config.bedrock_ip},
-				{ name: "Bedrock Port", value: config.bedrock_port},
-				{ name: "Minecraft version", value: process.env.minecraft_version},
+				{ name: "Java IP", value: process.env.MINECRAFT_JAVA_DOMAIN },
+				{ name: "Bedrock IP", value: process.env.MINECRAFT_BEDROCK_IP },
+				{ name: "Bedrock Port", value: process.env.MINECRAFT_BEDROCK_PORT },
+				{ name: "Minecraft Version", value: process.env.MINECRAFT_VERSION }
 			)
-			.setThumbnail('https://static-00.iconduck.com/assets.00/minecraft-icon-2048x2048-3ifq7gy7.png')
-			.setFooter({ text: `${config.java_ipsssss}`, iconURL: 'https://i.ytimg.com/vi/0sSyz2KZEkE/oar2.jpg?sqp=-oaymwEiCMAEENAFSFqQAgHyq4qpAxEIARUAAAAAJQAAyEI9AICiQw==&rs=AOn4CLBLPtaR7nmIQJRDEni8_TgS-R-bzg' })
-
+			.setImage(config.minecraft_img_url)
+			.setFooter({ text: `develop by ${config.developer}`, iconURL: config.thumbnail_url })
 			.setTimestamp();
 
-		await interaction.editReply({ content: '', embeds: [embed] });
+		await interaction.editReply({ embeds: [embed] });
 	},
 };

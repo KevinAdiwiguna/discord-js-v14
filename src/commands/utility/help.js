@@ -1,9 +1,11 @@
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
-const url = require('url');
+import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js';
+import fs from 'fs'
+import path from 'path';
+import url from 'url'
+import config from '../../config.json' with { type: "json" };
 
-module.exports = {
+
+export default {
   data: new SlashCommandBuilder()
     .setName("help")
     .setDescription("List of all bot's commands."),
@@ -38,8 +40,8 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setTitle("Help menu")
       .setDescription("Select a category from the dropdown menu to view commands")
-      .setImage('https://i.ytimg.com/vi/0sSyz2KZEkE/oar2.jpg?sqp=-oaymwEiCMAEENAFSFqQAgHyq4qpAxEIARUAAAAAJQAAyEI9AICiQw==&rs=AOn4CLBLPtaR7nmIQJRDEni8_TgS-R-bzg')
-      .setFooter({ text: `${process.env.minecraft_java_server}` })
+      .setImage(`${config.thumbnail_url}`)
+      .setFooter({ text: `develop by ${config.developer}` })
       .setTimestamp();
 
     const row = new ActionRowBuilder()
@@ -57,7 +59,7 @@ module.exports = {
       const categoryEmbed = new EmbedBuilder()
         .setTitle(`${selectedCategory} Commands`)
         .setDescription("List of all commands in this category")
-        .setThumbnail(`${interaction.user.displayAvatarURL()}`)
+        .setImage(`${config.thumbnail_url}`)
         .addFields(categoryCommands.map(command => ({
           name: command.name,
           value: command.description

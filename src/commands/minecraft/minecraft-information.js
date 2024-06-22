@@ -1,54 +1,53 @@
-const { EmbedBuilder, SlashCommandBuilder } = require('discord.js');
-const config = require('../../../config.json')
+import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import config from '../../config.json' with { type: "json" };
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName('minecraft-information')
-    .setDescription('/minecraft-information. Show Minecraft server status'),
+    .setDescription('Show Minecraft server status'),
 
   async execute(interaction) {
     await interaction.deferReply();
+
     const getStatus = async () => {
       try {
-        const getMinecraftBedrockData = await fetch(`https://api.mcstatus.io/v2/status/bedrock/${config.bedrock_ip}:${config.bedrock_port}`)
-        const getMinecraftJavaData = await fetch(`https://api.mcstatus.io/v2/status/java/${config.java_ip}`)
+        const getMinecraftBedrockData = await fetch(`https://api.mcstatus.io/v2/status/bedrock/${process.env.MINECRAFT_BEDROCK_IP}:${process.env.MINECRAFT_BEDROCK_PORT}`);
+        const getMinecraftJavaData = await fetch(`https://api.mcstatus.io/v2/status/java/${process.env.MINECRAFT_JAVA_DOMAIN}`);
 
-        const javaStatus = await getMinecraftJavaData.json()
-        const bedrockStatus = await getMinecraftBedrockData.json()
+        const javaStatus = await getMinecraftJavaData.json();
+        const bedrockStatus = await getMinecraftBedrockData.json();
 
         return {
           javaStatus,
           bedrockStatus
-        }
+        };
       } catch (error) {
         console.error('Error fetching Minecraft server status:', error);
         return null;
       }
     };
 
-    const miencraftStatus = await getStatus();
+    const minecraftStatus = await getStatus();
 
     const statusColor = (java, bedrock) => {
-      if (!java && !bedrock) return 0xFF0000;
-      if (!java || !bedrock) return 0xFFFF00;
-      return '#00FF00';
+      if (!java || !java.online || !bedrock || !bedrock.online) return '#FF0000'; // Red if either server is offline
+      return '#00FF00'; // Green if both servers are online
     };
 
-
     const embed = new EmbedBuilder()
-      .setColor(statusColor(miencraftStatus?.javaStatus?.online, miencraftStatus?.bedrockStatus?.online))
+      .setColor(statusColor(minecraftStatus?.javaStatus, minecraftStatus?.bedrockStatus))
       .setTitle('Minecraft Server Status')
-      .setDescription(`Minecraft main IP: ${miencraftStatus?.javaStatus?.host || "server not active"}`)
+      .setDescription(`Minecraft main IP: ${minecraftStatus?.javaStatus?.host || "Server not active"}`)
       .addFields(
-        { name: "Online Players", value: `${!miencraftStatus?.javaStatus?.players?.online ? "0" : miencraftStatus?.javaStatus?.players?.online}/${!miencraftStatus?.javaStatus?.players?.max ? "0" : miencraftStatus?.javaStatus?.players?.max}` },
-        { name: "Server Version", value: miencraftStatus?.javaStatus?.version?.name_clean || "unknown" },
-        { name: "Server java status", value: miencraftStatus?.javaStatus?.version?.name_clean || "unknown" },
-        { name: "Java status", value: `${miencraftStatus?.javaStatus?.online ? "online" : "offline"}` },
-        { name: "Bedrock status", value: `${miencraftStatus?.bedrockStatus?.online ? "online" : "offline"}` },
+        { name: "Online Players", value: `${minecraftStatus?.javaStatus?.players?.online || 0}/${minecraftStatus?.javaStatus?.players?.max || 0}` },
+        { name: "Server Version", value: minecraftStatus?.javaStatus?.version?.name_clean || "Unknown" },
+        { name: "Java Status", value: `${minecraftStatus?.javaStatus?.online ? "Online" : "Offline"}` },
+        { name: "Bedrock Status", value: `${minecraftStatus?.bedrockStatus?.online ? "Online" : "Offline"}` }
       )
-      .setThumbnail('https://i.ytimg.com/vi/0sSyz2KZEkE/oar2.jpg?sqp=-oaymwEiCMAEENAFSFqQAgHyq4qpAxEIARUAAAAAJQAAyEI9AICiQw==&rs=AOn4CLBLPtaR7nmIQJRDEni8_TgS-R-bzg')
-      .setFooter({ text: `${process.env.minecraft_java_server}`, iconURL: 'https://static-00.iconduck.com/assets.00/minecraft-icon-2048x2048-3ifq7gy7.png' })
+      .setImage(config.minecraft_img_url)
+      .setFooter({ text: `develop by ${config.developer}`, iconURL: config.thumbnail_url })
       .setTimestamp();
+
     await interaction.editReply({ embeds: [embed] });
   },
 };

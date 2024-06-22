@@ -1,13 +1,14 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName('search-meme')
-    .setDescription('/search-meme. Search for a meme')
+    .setDescription('Search for a meme')
     .addStringOption(option =>
       option.setName('query')
         .setDescription('The search query')
         .setRequired(true)),
+
   async execute(interaction) {
     const query = interaction.options.getString('query');
 
@@ -18,9 +19,13 @@ module.exports = {
             'User-Agent': 'remibot'
           }
         });
-        console.log(response.status)
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch memes from Reddit');
+        }
 
         const results = await response.json();
+
         if (!results || !Array.isArray(results.data.children) || results.data.children.length === 0) {
           throw new Error('No memes found');
         }
@@ -29,7 +34,7 @@ module.exports = {
         const { title, url: image, author } = meme;
 
         const embed = new EmbedBuilder()
-          .setColor('Random')
+          .setColor('#FF4500')
           .setTitle(title)
           .setImage(image)
           .setURL(image)
@@ -37,10 +42,11 @@ module.exports = {
 
         await interaction.reply({ embeds: [embed] });
       } catch (error) {
+        console.error('Error searching for meme:', error);
         await interaction.reply('Sorry, I could not find a meme with that query.');
       }
     }
 
-    searchMeme(query);
-  }
+    await searchMeme(query);
+  },
 };

@@ -1,11 +1,12 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import config from '../../config.json' with { type: "json" };
 
-module.exports = {
+export default {
 	data: new SlashCommandBuilder()
 		.setName('minecraft-ping')
-		.setDescription('/minecraft-ping. check ping to minecrft server'),
+		.setDescription('Check ping to Minecraft server'),
+
 	async execute(interaction) {
-		console.log(interaction);
 		const sent = await interaction.reply({ content: 'Pinging...', fetchReply: true, ephemeral: true });
 		const ping = sent.createdTimestamp - interaction.createdTimestamp;
 
@@ -18,9 +19,9 @@ module.exports = {
 		const embed = new EmbedBuilder()
 			.setColor(getColor(ping))
 			.setTitle('Minecraft Ping')
-			.setDescription(`Ping kamu ke server Minecraft: ${ping}ms`)
-			.setThumbnail('https://static-00.iconduck.com/assets.00/minecraft-icon-2048x2048-3ifq7gy7.png')
-			.setFooter({ text: `${process.env.minecraft_java_server}`, iconURL: 'https://i.ytimg.com/vi/0sSyz2KZEkE/oar2.jpg?sqp=-oaymwEiCMAEENAFSFqQAgHyq4qpAxEIARUAAAAAJQAAyEI9AICiQw==&rs=AOn4CLBLPtaR7nmIQJRDEni8_TgS-R-bzg' })
+			.setDescription(`Your ping to the Minecraft server: ${ping}ms`)
+			.setThumbnail(config.minecraft_img_url)
+			.setFooter({ text: `develop by ${config.developer}`, iconURL: config.thumbnail_url })
 			.setTimestamp();
 
 		await interaction.editReply({ content: '', embeds: [embed] });

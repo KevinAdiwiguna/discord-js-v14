@@ -1,6 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+import { SlashCommandBuilder } from 'discord.js';
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName('announcement-stream')
     .setDescription('Announce a live stream')
@@ -10,6 +10,6 @@ module.exports = {
         .setRequired(true)),
   async execute(interaction) {
     const url = interaction.options.getString('url');
-    await interaction.reply({ content: `@everyone ${url}`});
+    await interaction.reply({ content: `@everyone ${url}` });
   }
 };

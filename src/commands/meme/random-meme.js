@@ -1,11 +1,10 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName('random-meme')
-    .setDescription('/random-meme. Show random meme'),
+    .setDescription('Show a random meme'),
   async execute(interaction) {
-
     async function getMeme() {
       try {
         const response = await fetch('https://www.reddit.com/r/memes/random/.json', {
@@ -13,13 +12,16 @@ module.exports = {
             'User-Agent': 'remibot'
           }
         });
-        console.log(response.status)
 
-        const meme = await response.json();
-        const { title, url: image, author } = meme[0].data.children[0].data;
+        if (!response.ok) {
+          throw new Error('Failed to fetch meme from Reddit');
+        }
+
+        const memeData = await response.json();
+        const { title, url: image, author } = memeData[0].data.children[0].data;
 
         const embed = new EmbedBuilder()
-          .setColor('Random')
+          .setColor('#FF4500')
           .setTitle(title)
           .setImage(image)
           .setURL(image)
@@ -27,10 +29,11 @@ module.exports = {
 
         await interaction.reply({ embeds: [embed] });
       } catch (error) {
+        console.error('Error fetching meme:', error);
         await interaction.reply('Sorry, I could not fetch a meme at this time.');
       }
     }
 
-    getMeme();
-  }
+    await getMeme();
+  },
 };
