@@ -25,7 +25,7 @@ module.exports = {
         await interaction.reply(data.record);
       } catch (error) {
         console.log(error)
-        await interaction.reply('Sorry, I could not fetch get response at this timse.');
+        await interaction.reply({ content: 'Sorry, I could not fetch get response at this timse.', ephemeral: true });
       }
     }
     fetchAI();
