@@ -16,7 +16,8 @@
     "@google/generative-ai": "^0.13.0",
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
-    "minecraft-server-util": "^5.4.4"
+    "minecraft-server-util": "^5.4.4",
+    "wikijs": "^6.4.1"
   },
   "devDependencies": {
     "eslint": "^9.5.0"
