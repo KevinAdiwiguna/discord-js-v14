@@ -29,7 +29,7 @@ export default {
       await interaction.editReply(`**${page.title}**\n${truncatedSummary}`);
     } catch (error) {
       console.error(error);
-      await interaction.editReply('Terjadi kesalahan saat mencari di Wikipedia.');
+      await interaction.editReply('Terjadi kesalahan saat mencari di Wikipedia, kata terlalu panjang untuk di kirim ke discord');
     }
   }
 };
