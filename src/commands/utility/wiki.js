@@ -24,12 +24,38 @@ export default {
       const page = await wiki().page(search.results[0]);
       const summary = await page.summary();
 
-      const truncatedSummary = summary.length > 2000 ? `${summary.substring(0, 1997)}...` : summary;
+      const maxCharacters = 2000;
+      const title = `**${page.title}**\n`;
+      let content = title + summary;
 
-      await interaction.editReply(`**${page.title}**\n${truncatedSummary}`);
+      function splitMessage(content, maxLength) {
+        const parts = [];
+        let currentIndex = 0;
+
+        while (currentIndex < content.length) {
+          let nextIndex = currentIndex + maxLength;
+          if (nextIndex < content.length) {
+            while (content[nextIndex] !== ' ' && nextIndex > currentIndex) {
+              nextIndex--;
+            }
+          }
+          parts.push(content.slice(currentIndex, nextIndex).trim());
+          currentIndex = nextIndex;
+        }
+
+        return parts;
+      }
+
+      const messages = splitMessage(content, maxCharacters);
+
+      await interaction.editReply({ content: messages[0] });
+
+      for (let i = 1; i < messages.length; i++) {
+        await interaction.followUp({ content: messages[i] });
+      }
     } catch (error) {
       console.error(error);
-      await interaction.editReply('Terjadi kesalahan saat mencari di Wikipedia, kata terlalu panjang untuk di kirim ke discord');
+      await interaction.editReply({content: 'Terjadi kesalahan saat mencari di Wikipedia.', ephemeral: true});
     }
   }
 };
