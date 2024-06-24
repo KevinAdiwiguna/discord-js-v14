@@ -31,7 +31,7 @@ export default {
         )
         .setImage(config.github_img_url)
         .setTimestamp()
-        .setFooter({ text: config.developer, iconURL: config.thumbnail_url });
+        .setFooter({ text: `develop by ${config.developer}`, iconURL: config.thumbnail_url })
 
       await interaction.reply({ embeds: [embed] });
     } catch (error) {
