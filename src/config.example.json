@@ -1,10 +1,20 @@
 {
-  "welcome_channel": "welcome channel name (NOT ID)",
-  "rules_channel": "<#channel id here>",
-  "self_role_channel": "<#channel id here>",
-  "server_name": "your discord server name",
+  "welcome_channel": "general",
+  "rules_channel": "<#0000000000>",
+  "self_role_channel": "<#0000000000>",
+  "server_name": "",
   "thumbnail_url": "",
   "minecraft_img_url": "",
-  "developer": "kepin",
-  "github": "github.com/KevinAdiwiguna"
+  "developer": "KevinAdiwiguna",
+  "github": "https://github.com/KevinAdiwiguna",
+  "github_img_url": "https://avatars.githubusercontent.com/u/108141665?s=400&u=618c331f45983a801f89126146d4d6173fe1e5cc&v=4",
+  "github_logo": "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png",
+  "bot_name": "",
+  "ask_gemini_channel": "",
+  "links": [
+    {
+      "name": "",
+      "url": ""
+    }
+  ]
 }
