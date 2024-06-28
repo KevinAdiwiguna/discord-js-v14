@@ -15,8 +15,8 @@ export default {
 			.setDescription('List of Minecraft servers')
 			.addFields(
 				{ name: "Java IP", value: process.env.MINECRAFT_JAVA_DOMAIN },
-				{ name: "Bedrock IP", value: process.env.MINECRAFT_BEDROCK_IP },
-				{ name: "Bedrock Port", value: process.env.MINECRAFT_BEDROCK_PORT },
+				// { name: "Bedrock IP", value: process.env.MINECRAFT_BEDROCK_IP },
+				// { name: "Bedrock Port", value: process.env.MINECRAFT_BEDROCK_PORT },
 				{ name: "Minecraft Version", value: process.env.MINECRAFT_VERSION }
 			)
 			.setImage(config.minecraft_img_url)
