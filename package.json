@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node --watch ./src/index.js",
     "slash": "node ./src/deploy-commands.js",
-    "prod": "node ./src/index.js"
+    "prod": "node ./src/deploy-commands.js &&  node ./src/index.js"
   },
   "keywords": [],
   "author": "",
