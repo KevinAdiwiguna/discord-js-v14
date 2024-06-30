@@ -39,7 +39,7 @@ export default {
 
       } catch (error) {
         console.error('Error searching for meal:', error);
-        await interaction.reply({text:'Sorry, I could not find a meal with that query.', ephemeral: true});
+        await interaction.reply({content:'Sorry, I could not find a meal with that query.', ephemeral: true});
       }
     }
 

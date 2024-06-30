@@ -31,7 +31,7 @@ export default {
         await interaction.reply({ embeds: [embed] });
       } catch (error) {
         console.error('Error fetching meme:', error);
-        await interaction.reply({ text: 'Sorry, I could not fetch a the meal at this time.', ephemeral: true });
+        await interaction.reply({ content: 'Sorry, I could not fetch a the meal at this time.', ephemeral: true });
       }
     }
     await getMeal();
