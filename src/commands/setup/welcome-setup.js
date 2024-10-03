@@ -35,15 +35,21 @@ export default {
     }
 
     const formattedMessage = message.replace('{selected-channel}', `#${channel.name}`);
-
-    const createGuild = await db.guild.upsert({
-      where: { guild_id: interaction.guildId },
-      update: {},
-      create: {
-        guild_id: interaction.guildId,
-        guild_name: interaction.guild.name
-      }
+    
+    const checkGuild = await db.guild.findUnique({
+      where: { guild_id: interaction.guildId }
     });
+
+    if (!checkGuild) {
+      const createGuild = await db.guild.upsert({
+        where: { guild_id: interaction.guildId },
+        update: {},
+        create: {
+          guild_id: interaction.guildId,
+          guild_name: interaction.guild.name
+        }
+      });
+    }
 
     const createWelcome = await db.welcome.upsert({
       where: { guild_id: createGuild.guild_id },
