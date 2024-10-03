@@ -11,13 +11,26 @@ model Welcome {
   guild_id       String  @id @map("guild_id")
   channel_id     String? @map("channel_id")
   custom_message String? @map("custom_message")
-  
+
   Guild Guild @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
+}
+model Minecraft {
+  id                String   @id @default(uuid())  // Add an auto-generated UUID as the primary key
+  guild_id          String   @map("guild_id")
+  server_name       String   @map("server_name")
+  server_address    String   @unique @map("server_address")
+  server_description String  @map("server_description")
+  server_version    String   @map("server_version")
+
+  Guild Guild @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
+
+  @@unique([guild_id, server_name])  // Ensure unique server names per guild
 }
 
 model Guild {
-  guild_id   String  @id @map("guild_id")
-  guild_name String  @map("guild_name")
+  guild_id   String @id @map("guild_id")
+  guild_name String @map("guild_name")
 
-  Welcome Welcome?
+  Welcome   Welcome?
+  Minecraft Minecraft[]
 }
