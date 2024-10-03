@@ -22,9 +22,6 @@ export default {
   Name: "welcome-setup",
   Category: "SETUP",
 
-  /**
-   * @param {import('discord.js').Interaction} interaction 
-   */
 
   async execute(interaction) {
     const channel = interaction.options.getChannel('channel');
@@ -40,25 +37,26 @@ export default {
       where: { guild_id: interaction.guildId }
     });
 
+    let guildRecord;
     if (!checkGuild) {
-      const createGuild = await db.guild.upsert({
-        where: { guild_id: interaction.guildId },
-        update: {},
-        create: {
+      guildRecord = await db.guild.create({
+        data: {
           guild_id: interaction.guildId,
           guild_name: interaction.guild.name
         }
       });
+    } else {
+      guildRecord = checkGuild; 
     }
 
     const createWelcome = await db.welcome.upsert({
-      where: { guild_id: createGuild.guild_id },
+      where: { guild_id: guildRecord.guild_id },
       update: {
         channel_id: channel.id,
         custom_message: formattedMessage 
       },
       create: {
-        guild_id: createGuild.guild_id,
+        guild_id: guildRecord.guild_id,
         channel_id: channel.id,
         custom_message: formattedMessage
       }
