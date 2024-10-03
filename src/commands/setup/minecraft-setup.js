@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { db } from '../../utlis/prisma.js'; // Assuming you have this configured correctly
 
 export default {
@@ -37,7 +37,7 @@ export default {
       const checkGuild = await db.guild.findUnique({
         where: { guild_id: interaction.guildId }
       });
-  
+
       if (!checkGuild) {
         const createGuild = await db.guild.upsert({
           where: { guild_id: interaction.guildId },
@@ -71,7 +71,20 @@ export default {
             server_version: serverVersion
           }
         });
-        await interaction.reply(`Minecraft server setup complete: \nName: ${serverName}\nAddress: ${serverAddress}\nDescription: ${serverDescription}\nVersion: ${serverVersion}`);
+        const embed = new EmbedBuilder()
+          .setColor(0x00AE86)
+          .setTitle('Minecraft Server Setup Complete')
+          .addFields(
+            { name: 'Server Name', value: serverName, inline: true },
+            { name: 'Server Address', value: serverAddress, inline: true },
+            { name: 'Description', value: serverDescription, inline: false },
+            { name: 'Version', value: serverVersion, inline: true }
+          )
+          .setTimestamp()
+          .setFooter({ text: 'Minecraft Server Management' });
+
+        await interaction.reply({ embeds: [embed] });
+
       }
     } catch (error) {
       console.error('Error saving Minecraft server data:', error);
