@@ -1,0 +1,18 @@
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { getJson } from '../../helpers/HttpUtils.js';
+
+export default {
+  data: new SlashCommandBuilder()
+    .setName('suggest')
+    .addStringOption(option =>
+      option.setName('suggest')
+        .setDescription('The suggestion you want to make')
+        .setRequired(true))
+    .setDescription('shows github statistics of a user'),
+  Name: "Github",
+  Category: "UTILITY",
+
+  async execute(interaction) {
+    
+  }
+}

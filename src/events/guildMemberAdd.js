@@ -1,21 +1,40 @@
-import { Events, EmbedBuilder } from 'discord.js'
-import config from '../config.json' with { type: "json" };
+import { Events, EmbedBuilder } from 'discord.js';
+import { db } from '../utlis/prisma.js';
 
 export default {
   name: Events.GuildMemberAdd,
-  async execute(interaction) {
-    const channel = interaction.guild.channels.cache.find(ch => ch.name === config.welcome_channel);
+  async execute(member) {
+    try {
+      const guildId = member.guild.id;
+      
+      const guild = await db.guild.findUnique({
+        where: { guild_id: guildId }
+      });
+      if (!guild) return;
 
-    if (!channel) return;
+      const welcome = await db.welcome.findUnique({
+        where: { guild_id: guild.guild_id }
+      });
+      if (!welcome) return;
 
-    const welcomeEmbed = new EmbedBuilder()
-      .setColor('#0099ff')
-      .setTitle('Welcome to the Server!')
-      .setDescription(`Selamat datang di server ${config.server_name}, <@${interaction.id}>! Pastikan untuk memeriksa ${config.rules_channel} dan ${config.self_role_channel}`)
-      .setThumbnail(interaction.user.displayAvatarURL())
-      .setTimestamp()
-      .setFooter({ text: `${config.developer}` });
+      const channel = await member.guild.channels.cache.get(welcome.channel_id);
+      if (!channel) return;
 
-    channel.send({ embeds: [welcomeEmbed] });
-  },
+      const message = welcome.custom_message
+        .replace('{mention-member}', `<@${member.id}>`)
+        .replace('{username}', `**${member.user.username}**`)
+        .replace('{server-name}', member.guild.name)
+        .replace('{selected-channel}', `#${channel.name}`); 
+      const embed = new EmbedBuilder()
+        .setDescription(message)
+        .setColor('#0099ff')
+        .setThumbnail(member.user.displayAvatarURL({ dynamic: true })) 
+        .setFooter({ text: `Joined on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}` })
+        .setTimestamp();
+
+      await channel.send({ embeds: [embed] });
+    } catch (error) {
+      console.error('Error sending welcome message:', error);
+    }
+  }
 };
