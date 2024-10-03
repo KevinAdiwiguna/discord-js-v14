@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,8 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Roles {
-  id       Int    @id @default(autoincrement())
-  roleId   String @unique
-  roleName String
+model Welcome {
+  guild_id       String  @id @map("guild_id")
+  channel_id     String? @map("channel_id")
+  custom_message String? @map("custom_message")
+  
+  Guild Guild @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
+}
+
+model Guild {
+  guild_id   String  @id @map("guild_id")
+  guild_name String  @map("guild_name")
+
+  Welcome Welcome?
 }
