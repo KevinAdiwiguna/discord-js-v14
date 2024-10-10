@@ -15,10 +15,12 @@
   "dependencies": {
     "@google/generative-ai": "^0.13.0",
     "@prisma/client": "^5.16.0",
+    "canvas": "^2.11.2",
     "common-tags": "^0.0.2",
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
     "minecraft-server-util": "^5.4.4",
+    "sharp": "^0.33.5",
     "wikijs": "^6.4.1"
   },
   "devDependencies": {

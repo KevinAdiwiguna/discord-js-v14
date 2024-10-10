@@ -7,30 +7,60 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Welcome {
-  guild_id       String  @id @map("guild_id")
-  channel_id     String? @map("channel_id")
-  custom_message String? @map("custom_message")
-
-  Guild Guild @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
-}
-model Minecraft {
-  id                String   @id @default(uuid())  // Add an auto-generated UUID as the primary key
-  guild_id          String   @map("guild_id")
-  server_name       String   @map("server_name")
-  server_address    String   @unique @map("server_address")
-  server_description String  @map("server_description")
-  server_version    String   @map("server_version")
-
-  Guild Guild @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
-
-  @@unique([guild_id, server_name])  // Ensure unique server names per guild
-}
-
 model Guild {
-  guild_id   String @id @map("guild_id")
-  guild_name String @map("guild_name")
+  guild_id   String @id @unique
+  guild_name String
 
-  Welcome   Welcome?
   Minecraft Minecraft[]
+  Reminder  Reminder[]
+  Welcome   Welcome?
+}
+
+model Minecraft {
+  id                 String  @id @default(uuid())
+  guild_id           String
+  server_name        String
+  server_address     String
+  server_description String?
+  server_version     String?
+
+  guild Guild @relation(fields: [guild_id], references: [guild_id])
+}
+
+model Reminder {
+  reminder_id String    @id @default(uuid())
+  guild_id    String
+  message_id  String
+  is_reminder Boolean
+  time        DateTime
+  cooldown    BigInt?
+  expiry_time DateTime?
+
+  guild   Guild   @relation(fields: [guild_id], references: [guild_id])
+  message Message @relation(fields: [message_id], references: [message_id])
+}
+
+model Welcome {
+  guild_id   String
+  channel_id String?
+  message_id String
+
+  guild   Guild   @relation(fields: [guild_id], references: [guild_id])
+  message Message @relation(fields: [message_id], references: [message_id])
+
+  @@id([guild_id])
+}
+
+model Message {
+  message_id String      @id @default(uuid())
+  content    String
+  type       MessageType
+
+  Welcome  Welcome[]
+  Reminder Reminder[]
+}
+
+enum MessageType {
+  WELCOME
+  REMINDER
 }
