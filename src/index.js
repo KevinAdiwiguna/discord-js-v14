@@ -35,7 +35,7 @@ for (const folder of functionFolders) {
     }).catch((err) => {
       console.error(`Error importing file ${filePath}:`, err);
     });
-  }
+  } 
 }
 
 

@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -13,8 +13,9 @@ export default async (client) => {
       if (!file.endsWith('.js')) continue;
 
       const filePath = path.join(eventsPath, file);
+      const fileUrl = pathToFileURL(filePath).href;
 
-      const { default: event } = await import(filePath);
+      const { default: event } = await import(fileUrl);
 
       if (event.once) {
         client.once(event.name, (...args) => event.execute(...args));
