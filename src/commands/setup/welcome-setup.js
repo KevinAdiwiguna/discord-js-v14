@@ -22,46 +22,68 @@ export default {
   Name: "welcome-setup",
   Category: "SETUP",
 
-
   async execute(interaction) {
-    const channel = interaction.options.getChannel('channel');
-    const message = interaction.options.getString('message') || 'Welcome {mention-member} to {server-name}';
+    try {
+      // Ambil channel dan pesan dari opsi yang disediakan oleh pengguna
+      const channel = interaction.options.getChannel('channel');
+      const message = interaction.options.getString('message') || 'Welcome {mention-member} to {server-name}';
 
-    if (!channel) {
-      return interaction.reply({ content: 'Please select a channel', ephemeral: true });
-    }
+      if (!channel) {
+        return interaction.reply({ content: 'Please select a channel', ephemeral: true });
+      }
 
-    const formattedMessage = message.replace('{selected-channel}', `#${channel.name}`);
-    
-    const checkGuild = await db.guild.findUnique({
-      where: { guild_id: interaction.guildId }
-    });
+      // Format pesan sambutan dengan data channel yang dipilih
+      const formattedMessage = message.replace('{selected-channel}', `#${channel.name}`);
 
-    let guildRecord;
-    if (!checkGuild) {
-      guildRecord = await db.guild.create({
-        data: {
+      // Upsert guild ke dalam database (jika belum ada, maka akan dibuat)
+      const guildRecord = await db.guild.upsert({
+        where: { guild_id: interaction.guildId },
+        update: {
+          guild_name: interaction.guild.name,
+        },
+        create: {
           guild_id: interaction.guildId,
-          guild_name: interaction.guild.name
+          guild_name: interaction.guild.name,
         }
       });
-    } else {
-      guildRecord = checkGuild; 
+
+      // Buat pesan sambutan baru di database
+      const messageRecord = await db.message.create({
+        data: {
+          content: formattedMessage,
+          type: 'WELCOME',
+        }
+      });
+
+      // Upsert welcome message setup
+      const createWelcome = await db.welcome.upsert({
+        where: { guild_id: guildRecord.guild_id },
+        update: {
+          channel_id: channel.id,
+          message_id: messageRecord.message_id,
+        },
+        create: {
+          guild_id: guildRecord.guild_id,
+          channel_id: channel.id,
+          message_id: messageRecord.message_id,
+        }
+      });
+
+      // Berikan tanggapan bahwa setup sudah berhasil
+      return interaction.reply({ 
+        content: `Welcome message has been set to ${channel} with message: "${formattedMessage}"`, 
+        ephemeral: true 
+      });
+    
+    } catch (error) {
+      // Log kesalahan untuk debugging
+      console.error('Error setting up welcome message:', error);
+
+      // Kirim pesan error ke pengguna
+      return interaction.reply({ 
+        content: 'There was an error while setting up the welcome message. Please try again later.', 
+        ephemeral: true 
+      });
     }
-
-    const createWelcome = await db.welcome.upsert({
-      where: { guild_id: guildRecord.guild_id },
-      update: {
-        channel_id: channel.id,
-        custom_message: formattedMessage 
-      },
-      create: {
-        guild_id: guildRecord.guild_id,
-        channel_id: channel.id,
-        custom_message: formattedMessage
-      }
-    });
-
-    return interaction.reply({ content: `Welcome message has been set to ${channel} with message: "${formattedMessage}"`, ephemeral: true });
   },
 };

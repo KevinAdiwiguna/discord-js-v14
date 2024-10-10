@@ -12,12 +12,12 @@ export default {
     const guildId = interaction.guildId;
 
     try {
+      // Tunda balasan agar bisa melakukan pemrosesan
       await interaction.deferReply();
 
+      // Ambil daftar server Minecraft yang terkait dengan guild ini
       const minecraftServers = await db.minecraft.findMany({
-        where: {
-          guild_id: guildId
-        }
+        where: { guild_id: guildId }
       });
 
       if (minecraftServers.length === 0) {
@@ -28,41 +28,47 @@ export default {
       const embeds = [];
 
       for (const server of minecraftServers) {
-        const response = await getJson(`https://api.mcstatus.io/v2/status/java/${server.server_address}`);
+        try {
+          // Mengambil status dari API server Minecraft eksternal
+          const response = await getJson(`https://api.mcstatus.io/v2/status/java/${server.server_address}`);
 
-        if (response.status !== 200 || !response.data) {
-          await interaction.editReply(`Failed to fetch status for ${server.server_name}.`);
-          continue;
+          if (response.status !== 200 || !response.data) {
+            // Tangani jika gagal mengambil status server tertentu
+            await interaction.followUp(`Failed to fetch status for ${server.server_name}.`);
+            continue;
+          }
+
+          const serverStatus = response.data;
+          const isOnline = serverStatus?.online ? 'Yes' : 'No';
+          const playerCount = serverStatus?.players?.online || 0;
+          const maxPlayers = serverStatus?.players?.max || 0;
+          const serverThumbnail = `https://eu.mc-api.net/v3/server/favicon/${server.server_address}`;
+
+          const embed = new EmbedBuilder()
+            .setColor(0x00AE86)
+            .setTitle(`Minecraft Server: ${server.server_name}`)
+            .setTimestamp()
+            .setFooter({ text: 'Minecraft Server Management' })
+            .setThumbnail(serverThumbnail)
+            .addFields(
+              { name: 'Server Name', value: server.server_name, inline: true },
+              { name: 'Server Address', value: server.server_address, inline: true },
+              { name: 'Description', value: server.server_description || 'No description provided', inline: false },
+              { name: 'Version', value: server.server_version || 'Unknown', inline: true },
+              { name: 'Online', value: isOnline, inline: true },
+              { name: 'Players', value: `${playerCount} / ${maxPlayers}`, inline: true },
+              { name: 'Server Id', value: server.id, inline: false }
+            );
+
+          if (serverStatus?.favicon) {
+            embed.setThumbnail(serverStatus.favicon);
+          }
+
+          embeds.push(embed);
+        } catch (serverError) {
+          console.error(`Error fetching status for server ${server.server_name}:`, serverError);
+          await interaction.followUp(`Error fetching status for server: ${server.server_name}.`);
         }
-
-        const serverStatus = response.data;
-        const isOnline = serverStatus?.online ? 'Yes' : 'No';
-        const serverIcon = serverStatus?.favicon || null;
-        const playerCount = serverStatus?.players?.online || 0;
-        const maxPlayers = serverStatus?.players?.max || 0;
-        const serverThumbnail = `https://eu.mc-api.net/v3/server/favicon/${server.server_address}`;
-
-        const embed = new EmbedBuilder()
-          .setColor(0x00AE86)
-          .setTitle(`Minecraft Server: ${server.server_name}`)
-          .setTimestamp()
-          .setFooter({ text: 'Minecraft Server Management' })
-          .setThumbnail(serverThumbnail)
-          .addFields(
-            { name: 'Server Name', value: server.server_name, inline: true },
-            { name: 'Server Address', value: server.server_address, inline: true },
-            { name: 'Description', value: server.server_description || 'No description provided', inline: false },
-            { name: 'Version', value: server.server_version, inline: true },
-            { name: 'Online', value: isOnline, inline: true },
-            { name: 'Players', value: `${playerCount} / ${maxPlayers}`, inline: true },
-            { name: 'Server Id', value: server.id, inline: false },
-          );
-
-        if (serverIcon) {
-          embed.setThumbnail(serverIcon);
-        }
-
-        embeds.push(embed);
       }
 
       if (embeds.length > 0) {
@@ -72,6 +78,7 @@ export default {
       }
 
     } catch (error) {
+      // Tangani jika ada kesalahan pada saat mengambil daftar server atau lainnya
       console.error('Error fetching Minecraft server data:', error);
       await interaction.editReply('An error occurred while fetching the Minecraft server statuses.');
     }
