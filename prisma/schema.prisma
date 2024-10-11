@@ -8,23 +8,21 @@ datasource db {
 }
 
 model Guild {
-  guild_id   String @id @unique
+  guild_id   String      @id @unique
   guild_name String
-
-  Minecraft Minecraft[]
-  Reminder  Reminder[]
-  Welcome   Welcome?
+  Minecraft  Minecraft[]
+  Reminder   Reminder[]
+  Welcome    Welcome?
 }
 
 model Minecraft {
-  id                 String  @id @default(uuid())
   guild_id           String
   server_name        String
   server_address     String
   server_description String?
   server_version     String?
-
-  guild Guild @relation(fields: [guild_id], references: [guild_id])
+  id                 String  @id @default(uuid())
+  guild              Guild   @relation(fields: [guild_id], references: [guild_id])
 }
 
 model Reminder {
@@ -35,29 +33,25 @@ model Reminder {
   time        DateTime
   cooldown    BigInt?
   expiry_time DateTime?
-
-  guild   Guild   @relation(fields: [guild_id], references: [guild_id])
-  message Message @relation(fields: [message_id], references: [message_id])
+  guild       Guild     @relation(fields: [guild_id], references: [guild_id])
+  message     Message   @relation(fields: [message_id], references: [message_id])
 }
 
 model Welcome {
-  guild_id   String
+  guild_id   String  @id
   channel_id String?
   message_id String
-
-  guild   Guild   @relation(fields: [guild_id], references: [guild_id])
-  message Message @relation(fields: [message_id], references: [message_id])
-
-  @@id([guild_id])
+  images_url String?
+  guild      Guild   @relation(fields: [guild_id], references: [guild_id])
+  message    Message @relation(fields: [message_id], references: [message_id])
 }
 
 model Message {
   message_id String      @id @default(uuid())
   content    String
   type       MessageType
-
-  Welcome  Welcome[]
-  Reminder Reminder[]
+  Reminder   Reminder[]
+  Welcome    Welcome[]
 }
 
 enum MessageType {
