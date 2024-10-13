@@ -4,9 +4,9 @@ import { parseISO, format } from 'date-fns';
 import { ChannelType, EmbedBuilder } from 'discord.js';
 
 // Fungsi untuk menjadwalkan pengingat
-export async function scheduleReminder(reminder, client, created_by ) {
+export async function scheduleReminder(reminder, client) {
   try {
-    const { message, timeid, channel_id } = reminder;
+    const { message, timeid, channel_id, created_by } = reminder;
 
     // Pastikan pesan dimuat dengan benar
     if (!message || !message.content) {
