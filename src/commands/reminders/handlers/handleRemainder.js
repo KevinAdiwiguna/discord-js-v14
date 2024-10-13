@@ -4,7 +4,7 @@ import { parseISO, format } from 'date-fns';
 import { ChannelType, EmbedBuilder } from 'discord.js';
 
 // Fungsi untuk menjadwalkan pengingat
-export async function scheduleReminder(reminder, client) {
+export async function scheduleReminder(reminder, client, created_by ) {
   try {
     const { message, timeid, channel_id } = reminder;
 
@@ -40,7 +40,7 @@ export async function scheduleReminder(reminder, client) {
           .setDescription(content)
           .setColor('#00FF00')  // Warna hijau untuk menunjukkan sukses
           .setTimestamp() // Menggunakan timestamp saat pesan dikirim
-          .setFooter({ text: `Reminder created by ${interaction.user.tag}` })
+          .setFooter({ text: `Reminder created by ${created_by}` })
 
         // Jika ada URL gambar, tambahkan gambar ke embed
         if (images_url) {

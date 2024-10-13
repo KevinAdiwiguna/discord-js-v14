@@ -42,7 +42,7 @@ export default {
 
   async execute(interaction) {
     try {
-      const messageContent = interaction.options.getString('message');
+      const messageContent = interaction.options.getString('message').replace(/\\n/g, '\n'); 
       const day = interaction.options.getString('day');
       const hour = interaction.options.getString('hour');
       const minute = interaction.options.getString('minute');
@@ -91,6 +91,7 @@ export default {
           message_id: messageRecord.message_id,
           time_id: timeRecord.time_id,
           channel_id: channel.id,
+          created_by: interaction.user.tag,
         },
       });
 
