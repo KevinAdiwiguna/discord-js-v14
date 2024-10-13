@@ -30,6 +30,7 @@ model Reminder {
   guild_id    String
   message_id  String
   time_id     String
+  channel_id  String?
   guild       Guild   @relation(fields: [guild_id], references: [guild_id])
   message     Message @relation(fields: [message_id], references: [message_id])
   timeid      Time    @relation(fields: [time_id], references: [time_id])
