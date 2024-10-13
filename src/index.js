@@ -39,8 +39,10 @@ for (const folder of functionFolders) {
 }
 
 
-try {
-  await client.login(process.env.token);
-} catch (err) {
-  console.error('Error logging in:', err);
-}
+(async () => {
+  try {
+    await client.login(process.env.token);
+  } catch (err) {
+    console.error('Error logging in:', err);
+  }
+})();
