@@ -1,12 +1,12 @@
 import cron from 'node-cron';
-import { db } from '../../../utlis/prisma.js';  // Pastikan jalur yang benar
+import { db } from '../../../utlis/prisma.js';
 import { parseISO, format } from 'date-fns';
-import { ChannelType, EmbedBuilder } from 'discord.js';  // Mendukung EmbedBuilder dan ChannelType
+import { ChannelType, EmbedBuilder } from 'discord.js';
 
 // Fungsi untuk menjadwalkan pengingat
 export async function scheduleReminder(reminder, client) {
   try {
-    const { message, timeid } = reminder;
+    const { message, timeid, channel_id } = reminder;
 
     // Pastikan pesan dimuat dengan benar
     if (!message || !message.content) {
@@ -27,22 +27,27 @@ export async function scheduleReminder(reminder, client) {
         const guild = client.guilds.cache.get(reminder.guild_id);
         if (!guild) return;
 
-        const channel = guild.channels.cache.find(ch => ch.isTextBased() && ch.type === ChannelType.GuildText);
-        if (!channel) return;
+        // Cari channel berdasarkan channel_id dari database
+        const channel = guild.channels.cache.get(channel_id);
+        if (!channel || channel.type !== ChannelType.GuildText) {
+          console.error(`Error: Channel with ID ${channel_id} not found or invalid.`);
+          return;
+        }
 
         // Buat EmbedBuilder untuk pengingat
         const embed = new EmbedBuilder()
           .setTitle('🔔 **Reminder System**')
           .setDescription(content)
           .setColor('#00FF00')  // Warna hijau untuk menunjukkan sukses
-          .setTimestamp();  // Menggunakan timestamp saat pesan dikirim
+          .setTimestamp() // Menggunakan timestamp saat pesan dikirim
+          .setFooter({ text: `Reminder created by ${interaction.user.tag}` })
 
         // Jika ada URL gambar, tambahkan gambar ke embed
         if (images_url) {
           embed.setImage(images_url);
         }
 
-        // Kirim pengingat sebagai embed ke channel
+        // Kirim pengingat sebagai embed ke channel yang dipilih oleh pengguna
         await channel.send({ embeds: [embed] });
 
         // Hapus data reminder, message, dan time setelah reminder dikirim
