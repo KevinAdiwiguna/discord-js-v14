@@ -19,7 +19,6 @@
     "common-tags": "^0.0.2",
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
-    "minecraft-server-util": "^5.4.4",
     "sharp": "^0.33.5",
     "wikijs": "^6.4.1"
   },
