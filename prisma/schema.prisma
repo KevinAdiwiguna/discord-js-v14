@@ -26,22 +26,29 @@ model Minecraft {
 }
 
 model Reminder {
-  reminder_id String    @id @default(uuid())
+  reminder_id String  @id @default(uuid())
   guild_id    String
   message_id  String
-  is_reminder Boolean
-  time        DateTime
-  cooldown    BigInt?
-  expiry_time DateTime?
-  guild       Guild     @relation(fields: [guild_id], references: [guild_id])
-  message     Message   @relation(fields: [message_id], references: [message_id])
+  time_id     String
+  guild       Guild   @relation(fields: [guild_id], references: [guild_id])
+  message     Message @relation(fields: [message_id], references: [message_id])
+  timeid      Time    @relation(fields: [time_id], references: [time_id])
+}
+
+model Time {
+  time_id  String     @id @default(uuid())
+  hour     String
+  minute   String
+  day      String
+  month    String
+  year     String
+  Reminder Reminder[]
 }
 
 model Welcome {
   guild_id   String  @id
   channel_id String?
   message_id String
-  images_url String?
   guild      Guild   @relation(fields: [guild_id], references: [guild_id])
   message    Message @relation(fields: [message_id], references: [message_id])
 }
@@ -50,6 +57,7 @@ model Message {
   message_id String      @id @default(uuid())
   content    String
   type       MessageType
+  images_url String?
   Reminder   Reminder[]
   Welcome    Welcome[]
 }
