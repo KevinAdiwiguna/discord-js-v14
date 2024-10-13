@@ -15,7 +15,6 @@
   "dependencies": {
     "@google/generative-ai": "^0.13.0",
     "@prisma/client": "^5.16.0",
-    "ascii-table3": "^0.9.0",
     "canvas": "^2.11.2",
     "common-tags": "^0.0.2",
     "date-fns": "^4.1.0",
