@@ -44,20 +44,32 @@ export default {
         where: { guild_id: interaction.guildId }
       });
 
-      if (existingWelcome) {
-        const updatedWelcome = await db.welcome.update({
+      const existingMessage = await db.message.findFirst({
+        where: {
+          type: 'WELCOME',
+          Welcome: {
+            some: {
+              guild_id: interaction.guildId
+            }
+          }
+        }
+      })
+
+      if (existingWelcome && existingMessage) {
+        await db.welcome.update({
           where: { guild_id: interaction.guildId },
           data: {
             channel_id: channel.id,
-            message: {
-              update: {
-                content: formattedMessage
-              }
-            },
-            images_url: imageUrl || null,
           }
         });
 
+        await db.message.update({
+          where: { message_id: existingMessage.message_id },
+          data: {
+            content: formattedMessage,
+            images_url: imageUrl || null,
+          }
+        });
 
         return interaction.reply({
           content: `Welcome message has been updated to ${channel} with message: "${formattedMessage}"`,
@@ -76,19 +88,32 @@ export default {
           }
         });
 
-        const messageRecord = await db.message.create({
-          data: {
-            content: formattedMessage,
-            type: 'WELCOME',
-          }
-        });
+        let messageRecord;
 
-        const createWelcome = await db.welcome.create({
+        if (existingMessage) {
+          messageRecord = await db.message.update({
+            where: { message_id: existingMessage.message_id },
+            data: {
+              content: formattedMessage,
+              images_url: imageUrl || null,
+              type: 'WELCOME',
+            }
+          });
+        } else {
+          messageRecord = await db.message.create({
+            data: {
+              content: formattedMessage,
+              images_url: imageUrl || null,
+              type: 'WELCOME',
+            }
+          });
+        }
+
+        await db.welcome.create({
           data: {
             guild_id: guildRecord.guild_id,
             channel_id: channel.id,
             message_id: messageRecord.message_id,
-            images_url: imageUrl || null,
           }
         });
 
@@ -105,5 +130,5 @@ export default {
         ephemeral: true
       });
     }
-  },
+  }
 };

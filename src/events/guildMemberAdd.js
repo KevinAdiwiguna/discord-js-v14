@@ -11,7 +11,7 @@ export default {
         where: { guild_id: guildId },
         include: {
           guild: true,
-          message: true 
+          message: true
         }
       });
 
@@ -33,10 +33,10 @@ export default {
         .setDescription(message)
         .setColor('#0099ff')
         .setFooter({ text: `Joined on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}` })
-        .setThumbnail(member.user.displayAvatarURL({ format: 'png', size: 1024 })) // Tambahkan thumbnail avatar
+        .setThumbnail(member.user.displayAvatarURL({ format: 'png', size: 1024 })) // Add user avatar as thumbnail
         .setTimestamp();
 
-      const imageUrl = welcomeData.images_url;
+      const imageUrl = welcomeData.message.images_url;
 
       if (imageUrl) {
         await channel.send({ embeds: [embed], files: [{ attachment: imageUrl, name: 'welcome-image.png' }] });
