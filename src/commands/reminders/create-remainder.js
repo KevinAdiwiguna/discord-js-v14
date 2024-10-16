@@ -5,7 +5,7 @@ import { scheduleReminder } from './handlers/handleRemainder.js';
 
 export default {
   data: new SlashCommandBuilder()
-    .setName('create-remainder')
+    .setName('create-reminder')
     .setDescription('Create a reminder')
     .addStringOption(option =>
       option.setName('message')
@@ -17,11 +17,11 @@ export default {
         .setRequired(true))
     .addStringOption(option =>
       option.setName('hour')
-        .setDescription('1-24')
+        .setDescription('0-23')
         .setRequired(true))
     .addStringOption(option =>
       option.setName('minute')
-        .setDescription('1-60')
+        .setDescription('0-59')
         .setRequired(true))
     .addStringOption(option =>
       option.setName('month')
@@ -29,7 +29,7 @@ export default {
         .setRequired(true))
     .addStringOption(option =>
       option.setName('year')
-        .setDescription('xxxx')
+        .setDescription('YYYY')
         .setRequired(true))
     .addChannelOption(option =>
       option.setName('channel')
@@ -43,76 +43,69 @@ export default {
   async execute(interaction) {
     try {
       const messageContent = interaction.options.getString('message').replace(/\\n/g, '\n'); 
-      const day = interaction.options.getString('day');
-      const hour = interaction.options.getString('hour');
-      const minute = interaction.options.getString('minute');
-      const month = interaction.options.getString('month');
+      const day = interaction.options.getString('day').padStart(2, '0');
+      const hour = interaction.options.getString('hour').padStart(2, '0');
+      const minute = interaction.options.getString('minute').padStart(2, '0');
+      const month = interaction.options.getString('month').padStart(2, '0');
       const year = interaction.options.getString('year');
       const imageUrl = interaction.options.getString('image-url');
       const channel = interaction.options.getChannel('channel');
+      const guildId = interaction.guildId;
+      const guildName = interaction.guild?.name;
 
-      // Gunakan ChannelType.GuildText untuk memeriksa tipe channel
       if (!channel || channel.type !== ChannelType.GuildText) {
         return interaction.reply({ content: 'Please select a valid text channel for the reminder.', ephemeral: true });
       }
 
-      // Validasi tanggal dan waktu
-      const dateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00`;
+      const dateStr = `${year}-${month}-${day}T${hour}:${minute}:00`;
       const date = parseISO(dateStr);
 
       if (!isValid(date) || !isFuture(date)) {
         return interaction.reply({ content: 'The provided date and time are invalid or in the past.', ephemeral: true });
       }
 
-      // Masukkan waktu ke tabel Time
-      const timeRecord = await db.time.create({
-        data: {
-          day: day,
-          month: month,
-          year: year,
-          hour: hour,
-          minute: minute,
+      // Cek apakah guild ada di database, jika tidak, buat entri baru
+      const guildRecord = await db.guild.upsert({
+        where: { guild_id: guildId },
+        update: { guild_name: guildName },
+        create: {
+          guild_id: guildId,
+          guild_name: guildName,
         },
       });
 
-      // Masukkan pesan ke tabel Message
-      const messageRecord = await db.message.create({
-        data: {
-          content: messageContent,
-          type: 'REMINDER',
-          images_url: imageUrl || null,
-        },
-      });
-
-      // Masukkan pengingat ke tabel Reminder
+      // Masukkan pengingat ke tabel Reminder beserta data Time dan Message
       const reminderRecord = await db.reminder.create({
         data: {
-          guild_id: interaction.guildId,
-          message_id: messageRecord.message_id,
-          time_id: timeRecord.time_id,
+          guild_id: guildRecord.guild_id,
           channel_id: channel.id,
           created_by: interaction.user.tag,
+          time: {
+            create: {
+              day,
+              month,
+              year,
+              hour,
+              minute,
+            },
+          },
+          message: {
+            create: {
+              content: messageContent,
+              type: 'REMINDER',
+              images_url: imageUrl || null,
+            },
+          },
+        },
+        include: {
+          message: true,
+          time: true,
         },
       });
 
-      // Ambil pengingat dengan relasi message dan time untuk dijadwalkan
-      const reminderWithDetails = await db.reminder.findUnique({
-        where: { reminder_id: reminderRecord.reminder_id },
-        include: {
-          message: true,    // Pastikan message dimuat
-          timeid: true      // Pastikan time dimuat
-        }
-      });
-
-      // Pastikan pengingat dan pesan terkait ada sebelum menjadwalkan pengingat
-      if (!reminderWithDetails || !reminderWithDetails.message) {
-        return interaction.reply({ content: 'Error: Reminder could not be scheduled because the message was not found.', ephemeral: true });
-      }
-
       // Jadwalkan pengingat
-      scheduleReminder(reminderWithDetails, interaction.client);
+      scheduleReminder(reminderRecord, interaction.client);
 
-      // Buat embed untuk respon
       const embed = new EmbedBuilder()
         .setTitle('Reminder Created Successfully!')
         .setDescription('Here are the details of the reminder you just created:')

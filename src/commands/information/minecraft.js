@@ -6,18 +6,26 @@ export default {
   data: new SlashCommandBuilder()
     .setName('minecraft-list')
     .setDescription('List all Minecraft servers for this guild')
-    .setDMPermission(false),
+    .setDMPermission(false).addStringOption(option =>
+      option.setName('server-type')
+        .setDescription('Select the type of Minecraft server to list')
+        .setRequired(true)
+        .addChoices(
+          { name: 'Java', value: 'JAVA' },
+          { name: 'Bedrock', value: 'BEDROCK' }
+        )),
 
   async execute(interaction) {
+    const serverType = interaction.options.getString('server-type')
     const guildId = interaction.guildId;
 
     try {
-      // Tunda balasan agar bisa melakukan pemrosesan
       await interaction.deferReply();
-
-      // Ambil daftar server Minecraft yang terkait dengan guild ini
       const minecraftServers = await db.minecraft.findMany({
-        where: { guild_id: guildId }
+        where: {
+          guild_id: guildId,
+          server_type: serverType
+        }
       });
 
       if (minecraftServers.length === 0) {
@@ -29,11 +37,10 @@ export default {
 
       for (const server of minecraftServers) {
         try {
-          // Mengambil status dari API server Minecraft eksternal
-          const response = await getJson(`https://api.mcstatus.io/v2/status/java/${server.server_address}`);
+          const apiType = serverType.toLowerCase();
+          const response = await getJson(`https://api.mcstatus.io/v2/status/${apiType}/${server.server_address}`);
 
           if (response.status !== 200 || !response.data) {
-            // Tangani jika gagal mengambil status server tertentu
             await interaction.followUp(`Failed to fetch status for ${server.server_name}.`);
             continue;
           }
@@ -42,6 +49,8 @@ export default {
           const isOnline = serverStatus?.online ? 'Yes' : 'No';
           const playerCount = serverStatus?.players?.online || 0;
           const maxPlayers = serverStatus?.players?.max || 0;
+          const version = serverStatus?.version?.name_clean || 'Unknown';
+
           const serverThumbnail = `https://eu.mc-api.net/v3/server/favicon/${server.server_address}`;
 
           const embed = new EmbedBuilder()
@@ -54,14 +63,22 @@ export default {
               { name: 'Server Name', value: server.server_name, inline: true },
               { name: 'Server Address', value: server.server_address, inline: true },
               { name: 'Description', value: server.server_description || 'No description provided', inline: false },
-              { name: 'Version', value: server.server_version || 'Unknown', inline: true },
               { name: 'Online', value: isOnline, inline: true },
               { name: 'Players', value: `${playerCount} / ${maxPlayers}`, inline: true },
-              { name: 'Server Id', value: server.id, inline: false }
             );
+
+          if (serverType === 'JAVA') {
+            embed.addFields({ name: 'Version', value: version, inline: true });
+            embed.addFields({ name: 'Server Id', value: server.id, inline: false });
+          } else if (serverType === 'BEDROCK') {
+            embed.addFields({ name: 'Port', value: server.server_port.toString(), inline: true });
+            embed.addFields({ name: 'Server Id', value: server.id, inline: false });
+          }
 
           if (serverStatus?.favicon) {
             embed.setThumbnail(serverStatus.favicon);
+          } else {
+            embed.setThumbnail(serverThumbnail);
           }
 
           embeds.push(embed);
@@ -78,7 +95,6 @@ export default {
       }
 
     } catch (error) {
-      // Tangani jika ada kesalahan pada saat mengambil daftar server atau lainnya
       console.error('Error fetching Minecraft server data:', error);
       await interaction.editReply('An error occurred while fetching the Minecraft server statuses.');
     }
