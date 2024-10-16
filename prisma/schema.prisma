@@ -55,17 +55,12 @@ model Time {
 
 model Message {
   message_id  String      @id @default(uuid())
-  reminder_id String      @unique
+  reminder_id String?     @unique
   content     String
   type        MessageType
   images_url  String?
-  reminder    Reminder    @relation(fields: [reminder_id], references: [reminder_id], onDelete: Cascade)
+  reminder    Reminder?   @relation(fields: [reminder_id], references: [reminder_id], onDelete: Cascade)
   Welcome     Welcome?
-}
-
-enum MessageType {
-  WELCOME
-  REMINDER
 }
 
 model Welcome {
@@ -73,5 +68,10 @@ model Welcome {
   channel_id String?
   message_id String  @unique
   guild      Guild   @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
-  message    Message @relation(fields: [message_id], references: [message_id], onDelete: Cascade)
+  message    Message @relation(fields: [message_id], onDelete: Cascade, references: [message_id])
+}
+
+enum MessageType {
+  WELCOME
+  REMINDER
 }
