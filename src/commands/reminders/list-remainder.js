@@ -3,11 +3,11 @@ import { db } from '../../utlis/prisma.js';
 
 export default {
   data: new SlashCommandBuilder()
-    .setName('list-remainder')
+    .setName('list-reminder')
     .setDescription('List all reminders in this guild'),
-  
-  Name: "list-remainder",
-  Category: "REMAINDERS",
+
+  Name: "list-reminder",
+  Category: "REMINDERS",
 
   async execute(interaction) {
     try {
@@ -17,7 +17,7 @@ export default {
         where: { guild_id: guildId },
         include: {
           message: true,
-          timeid: true
+          time: true
         }
       });
 
@@ -28,20 +28,21 @@ export default {
       const embed = new EmbedBuilder()
         .setTitle('List of Reminders')
         .setColor('#0099ff')
-        .setDescription(`Here are all the reminders for this guild:`)
+        .setDescription('Here are all the reminders for this guild:')
         .setTimestamp();
 
-      // Add each reminder as a field in the embed, including the reminder ID
       reminders.forEach((reminder, index) => {
         const { content, images_url } = reminder.message;
-        const { day, month, year, hour, minute } = reminder.timeid;
-        embed.addFields(
-          {
-            name: `Reminder #${index + 1} (ID: ${reminder.reminder_id})`,
-            value: `**Message**: ${content}\n**Date**: ${day}/${month}/${year} ${hour}:${minute}`,
-            inline: false
-          }
-        );
+        const { day, month, year, hour, minute } = reminder.time;
+        const channel = interaction.guild.channels.cache.get(reminder.channel_id);
+
+        const channelName = channel ? `#${channel.name}` : 'Unknown Channel';
+
+        embed.addFields({
+          name: `Reminder #${index + 1} (ID: ${reminder.reminder_id})`,
+          value: `**Message**: ${content}\n**Date**: ${day}/${month}/${year} ${hour}:${minute}\n**Channel**: ${channelName}`,
+          inline: false
+        });
 
         if (images_url) {
           embed.addFields({ name: 'Image URL', value: images_url, inline: false });
