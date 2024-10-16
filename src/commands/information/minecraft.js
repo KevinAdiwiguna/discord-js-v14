@@ -63,7 +63,6 @@ export default {
               { name: 'Server Name', value: server.server_name, inline: true },
               { name: 'Server Address', value: server.server_address, inline: true },
               { name: 'Description', value: server.server_description || 'No description provided', inline: false },
-              { name: 'Version', value: version || 'Unknown', inline: true },
               { name: 'Online', value: isOnline, inline: true },
               { name: 'Players', value: `${playerCount} / ${maxPlayers}`, inline: true },
             );
