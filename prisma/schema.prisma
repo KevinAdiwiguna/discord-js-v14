@@ -32,25 +32,40 @@ enum ServerType {
 }
 
 model Reminder {
-  reminder_id String  @id @default(uuid())
+  reminder_id String   @id @default(uuid())
   guild_id    String
-  message_id  String
-  time_id     String
   channel_id  String?
   created_by  String
-  guild       Guild   @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
-  message     Message @relation(fields: [message_id], references: [message_id], onDelete: Cascade)
-  timeid      Time    @relation(fields: [time_id], references: [time_id], onDelete: Cascade)
+  is_sent     Boolean  @default(false)
+  guild       Guild    @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
+  time        Time?
+  message     Message?
 }
 
 model Time {
-  time_id  String     @id @default(uuid())
-  hour     String
-  minute   String
-  day      String
-  month    String
-  year     String
-  Reminder Reminder[]
+  time_id     String   @id @default(uuid())
+  reminder_id String   @unique
+  hour        String
+  minute      String
+  day         String
+  month       String
+  year        String
+  reminder    Reminder @relation(fields: [reminder_id], references: [reminder_id], onDelete: Cascade)
+}
+
+model Message {
+  message_id  String      @id @default(uuid())
+  reminder_id String      @unique
+  content     String
+  type        MessageType
+  images_url  String?
+  reminder    Reminder    @relation(fields: [reminder_id], references: [reminder_id], onDelete: Cascade)
+  Welcome     Welcome?
+}
+
+enum MessageType {
+  WELCOME
+  REMINDER
 }
 
 model Welcome {
@@ -59,18 +74,4 @@ model Welcome {
   message_id String  @unique
   guild      Guild   @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
   message    Message @relation(fields: [message_id], references: [message_id], onDelete: Cascade)
-}
-
-model Message {
-  message_id String      @id @default(uuid())
-  content    String
-  type       MessageType
-  images_url String?
-  Reminder   Reminder[]
-  Welcome    Welcome?
-}
-
-enum MessageType {
-  WELCOME
-  REMINDER
 }
