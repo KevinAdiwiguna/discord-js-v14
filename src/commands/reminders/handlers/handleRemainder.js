@@ -3,12 +3,10 @@ import { db } from '../../../utlis/prisma.js';
 import { parseISO, format } from 'date-fns';
 import { ChannelType, EmbedBuilder } from 'discord.js';
 
-// Fungsi untuk menjadwalkan pengingat
 export async function scheduleReminder(reminder, client) {
   try {
-    const { message, timeid, channel_id, created_by } = reminder;
+    const { message, time, channel_id, created_by } = reminder;
 
-    // Pastikan pesan dimuat dengan benar
     if (!message || !message.content) {
       console.error(`Error scheduling reminder: Message not found for reminder with ID ${reminder.reminder_id}`);
       return;
@@ -16,41 +14,35 @@ export async function scheduleReminder(reminder, client) {
 
     const { content, images_url } = message;
 
-    const dateStr = `${timeid.year}-${timeid.month.padStart(2, '0')}-${timeid.day.padStart(2, '0')}T${timeid.hour.padStart(2, '0')}:${timeid.minute.padStart(2, '0')}`;
+    const dateStr = `${time.year}-${time.month.padStart(2, '0')}-${time.day.padStart(2, '0')}T${time.hour.padStart(2, '0')}:${time.minute.padStart(2, '0')}`;
     const date = parseISO(dateStr);
 
-    const cronPattern = `${timeid.minute} ${timeid.hour} ${timeid.day} ${timeid.month} *`;
+    const cronPattern = `${time.minute} ${time.hour} ${time.day} ${time.month} *`;
 
-    // Jadwalkan pengingat menggunakan cron
     cron.schedule(cronPattern, async () => {
       try {
         const guild = client.guilds.cache.get(reminder.guild_id);
         if (!guild) return;
 
-        // Cari channel berdasarkan channel_id dari database
         const channel = guild.channels.cache.get(channel_id);
         if (!channel || channel.type !== ChannelType.GuildText) {
           console.error(`Error: Channel with ID ${channel_id} not found or invalid.`);
           return;
         }
 
-        // Buat EmbedBuilder untuk pengingat
         const embed = new EmbedBuilder()
           .setTitle('🔔 **Reminder System**')
           .setDescription(content)
-          .setColor('#00FF00')  // Warna hijau untuk menunjukkan sukses
-          .setTimestamp() // Menggunakan timestamp saat pesan dikirim
-          .setFooter({ text: `Reminder created by ${created_by}` })
+          .setColor('#00FF00')
+          .setTimestamp()
+          .setFooter({ text: `Reminder created by ${created_by}` });
 
-        // Jika ada URL gambar, tambahkan gambar ke embed
         if (images_url) {
           embed.setImage(images_url);
         }
 
-        // Kirim pengingat sebagai embed ke channel yang dipilih oleh pengguna
         await channel.send({ embeds: [embed] });
 
-        // Hapus data reminder, message, dan time setelah reminder dikirim
         await deleteReminderData(reminder);
 
         console.log(`Reminder with ID ${reminder.reminder_id} has been sent and deleted.`);
@@ -60,46 +52,18 @@ export async function scheduleReminder(reminder, client) {
     });
 
     console.log(`Reminder for ${format(date, 'yyyy-MM-dd HH:mm')} has been scheduled.`);
-
   } catch (error) {
     console.error(`Error scheduling reminder: ${error.message}`);
   }
 }
 
-// Fungsi untuk menghapus reminder, message, dan time dari database
 async function deleteReminderData(reminder) {
   try {
-    const { message_id, time_id } = reminder;
-
-    // Hapus data reminder terlebih dahulu
     await db.reminder.delete({
       where: { reminder_id: reminder.reminder_id }
     });
 
-    // Periksa apakah message digunakan oleh reminder lain
-    const otherRemindersWithMessage = await db.reminder.findMany({
-      where: { message_id }
-    });
-
-    // Jika tidak ada reminder lain yang menggunakan message ini, hapus dari tabel Message
-    if (otherRemindersWithMessage.length === 0) {
-      await db.message.delete({
-        where: { message_id }
-      });
-    }
-
-    // Periksa apakah time digunakan oleh reminder lain
-    const otherRemindersWithTime = await db.reminder.findMany({
-      where: { time_id }
-    });
-
-    // Jika tidak ada reminder lain yang menggunakan time ini, hapus dari tabel Time
-    if (otherRemindersWithTime.length === 0) {
-      await db.time.delete({
-        where: { time_id }
-      });
-    }
-
+    console.log(`Reminder with ID ${reminder.reminder_id} and associated data has been deleted.`);
   } catch (error) {
     console.error('Error deleting reminder data:', error);
   }
