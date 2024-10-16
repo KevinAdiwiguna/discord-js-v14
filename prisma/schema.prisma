@@ -22,7 +22,6 @@ model Minecraft {
   server_address     String
   server_port        Int
   server_description String?
-  server_version     String?
   server_type        ServerType @default(JAVA)
   guild              Guild      @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
 }
