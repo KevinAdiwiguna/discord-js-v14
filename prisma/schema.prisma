@@ -16,13 +16,20 @@ model Guild {
 }
 
 model Minecraft {
+  id                 String     @id @default(uuid())
   guild_id           String
   server_name        String
   server_address     String
+  server_port        Int
   server_description String?
   server_version     String?
-  id                 String  @id @default(uuid())
-  guild              Guild   @relation(fields: [guild_id], references: [guild_id])
+  server_type        ServerType @default(JAVA)
+  guild              Guild      @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
+}
+
+enum ServerType {
+  JAVA
+  BEDROCK
 }
 
 model Reminder {
@@ -32,9 +39,9 @@ model Reminder {
   time_id     String
   channel_id  String?
   created_by  String
-  guild       Guild   @relation(fields: [guild_id], references: [guild_id])
-  message     Message @relation(fields: [message_id], references: [message_id])
-  timeid      Time    @relation(fields: [time_id], references: [time_id])
+  guild       Guild   @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
+  message     Message @relation(fields: [message_id], references: [message_id], onDelete: Cascade)
+  timeid      Time    @relation(fields: [time_id], references: [time_id], onDelete: Cascade)
 }
 
 model Time {
@@ -50,9 +57,9 @@ model Time {
 model Welcome {
   guild_id   String  @id
   channel_id String?
-  message_id String
-  guild      Guild   @relation(fields: [guild_id], references: [guild_id])
-  message    Message @relation(fields: [message_id], references: [message_id])
+  message_id String  @unique
+  guild      Guild   @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade)
+  message    Message @relation(fields: [message_id], references: [message_id], onDelete: Cascade)
 }
 
 model Message {
@@ -61,7 +68,7 @@ model Message {
   type       MessageType
   images_url String?
   Reminder   Reminder[]
-  Welcome    Welcome[]
+  Welcome    Welcome?
 }
 
 enum MessageType {
